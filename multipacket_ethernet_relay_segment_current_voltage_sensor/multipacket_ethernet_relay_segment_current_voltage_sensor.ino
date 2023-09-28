@@ -17,6 +17,7 @@ voltageSensor.setSensitivity(SENSITIVITY_1);
   return voltageSensor.getRmsVoltage();
 
 }
+
 float measureCurrent(uint8_t pin){
   float  sumSqr=0.0, meanSqr=0.0, currentRMS=0.0;
 for(int i=0; i <= 200; i++){

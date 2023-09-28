@@ -17,6 +17,73 @@
  */
 
 #include <UIPEthernet.h>
+#include <ZMPT101B.h>
+#include <stdlib.h>
+
+#define SENSITIVITY_1 674.75000f
+float measureVoltage(uint8_t pin){
+  
+ZMPT101B voltageSensor(pin, 50.0);
+
+voltageSensor.setSensitivity(SENSITIVITY_1);
+  return voltageSensor.getRmsVoltage();
+
+}
+
+float measureCurrent(uint8_t pin){
+  float  sumSqr=0.0, meanSqr=0.0, currentRMS=0.0;
+for(int i=0; i <= 200; i++){
+  float sensorValue = analogRead(pin);
+  float current =(2500-(sensorValue/1023)*5000.0)/185;
+  sumSqr+=current*current;
+  delay(3);
+}
+meanSqr = sumSqr/200;
+currentRMS = sqrt(meanSqr);
+return currentRMS;
+}
+
+ int countDigits(float fnum, int prec){
+    int count = 0;
+    int num = fnum*prec;
+  while (num != 0){
+    count+=1;
+    num = num/10;
+  }
+  if (count == 3){
+    count +=2;
+  }
+  else if (count > 3){
+    count+=1;
+  }
+  return count;
+
+}
+
+
+char * formatCV(float current, float voltage) {
+  int cSize = countDigits(current, 1000);
+  int vSize = countDigits(voltage, 100);
+  Serial.println(cSize);
+  Serial.println(vSize);
+  static char cBuff[10];
+  static char vBuff[10];
+  static char cvBuff[30];
+
+  dtostrf(current, cSize, 3, cBuff);
+  dtostrf(voltage, vSize, 2, vBuff);
+  for (int i = 0; i < cSize; i++) {
+    cvBuff[i] = cBuff[i];
+  }
+  cvBuff[cSize] = ':';
+  for (int i = 0; i < vSize; i++) {
+    cvBuff[i + cSize + 1] = vBuff[i];
+  }
+
+  cvBuff[vSize+cSize+1] = "\0";
+
+  return cvBuff;
+}
 
 EthernetClient client;
 signed long next;
@@ -28,7 +95,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(ledPin9, OUTPUT);
   uint8_t mac[6] = { 0x74, 0x69, 0x69, 0x2D, 0x30, 0x31 };
-  Ethernet.begin(mac, "AXTCP101");
+  Ethernet.begin(mac, "ACXTCP101");
 
   Serial.print("localIP: ");
   Serial.println(Ethernet.localIP());
@@ -142,28 +209,85 @@ void loop() {
                 digitalWrite(ledPin9, HIGH);
                 // char ack[3] = "ACK";
                 client.write(ack, 3);
-
               }
-              // Serial.println(newBuff);
-              // Serial.println(buffer);
+              Serial.println(newBuff);
+              Serial.println(strcmp(newBuff, "relayCV01"));
+              if (strcmp(newBuff,"relayCV01")==0){
+                Serial.println("Recieved Current Voltage Read, sending data");
+                // float voltage = 230.00;
+                float voltage = measureVoltage(A0);
 
-              // Serial.write(msg,size);
-            //  free(msg);
-              // Serial.println(replyBuffer);
+                // float current = 0.445;
+                float current = measureCurrent(A1);
+
+                char * formattedCV = formatCV(current,voltage);
+                client.write(formattedCV, 30);
+                // client.write(ack,3);
+                Serial.print("Current: ");
+                Serial.println(current);
+                Serial.println("Voltage: ");
+                Serial.println(voltage);
+                Serial.println("Formatted Current, Voltage: ");
+                Serial.println(formattedCV);
+              }
+              if (strcmp(newBuff,"relayCV02")==0){
+                Serial.println("Recieved Current Voltage Read, sending data");
+                // float voltage = 230.00;
+                float voltage = measureVoltage(A0);
+
+                // float current = 0.445;
+                float current = measureCurrent(A2);
+
+                char * formattedCV = formatCV(current,voltage);
+                client.write(formattedCV, 30);
+                // client.write(ack,3);
+                Serial.print("Current: ");
+                Serial.println(current);
+                Serial.println("Voltage: ");
+                Serial.println(voltage);
+                Serial.println("Formatted Current, Voltage: ");
+                Serial.println(formattedCV);
+              }
+              if (strcmp(newBuff,"relayCV03")==0){
+                Serial.println("Recieved Current Voltage Read, sending data");
+                // float voltage = 230.00;
+                float voltage = measureVoltage(A0);
+
+                // float current = 0.445;
+                float current = measureCurrent(A3);
+
+                char * formattedCV = formatCV(current,voltage);
+                client.write(formattedCV, 30);
+                // client.write(ack,3);
+                Serial.print("Current: ");
+                Serial.println(current);
+                Serial.println("Voltage: ");
+                Serial.println(voltage);
+                Serial.println("Formatted Current, Voltage: ");
+                Serial.println(formattedCV);
+              }
+              if (strcmp(newBuff,"relayCV04")==0){
+                Serial.println("Recieved Current Voltage Read, sending data");
+                // float voltage = 230.00;
+                float voltage = measureVoltage(A0);
+
+                // float current = 0.445;
+                float current = measureCurrent(A4);
+
+                char * formattedCV = formatCV(current,voltage);
+                client.write(formattedCV, 30);
+                // client.write(ack,3);
+                Serial.print("Current: ");
+                Serial.println(current);
+                Serial.println("Voltage: ");
+                Serial.println(voltage);
+                Serial.println("Formatted Current, Voltage: ");
+                Serial.println(formattedCV);
+              }
+              
             }
             delay(2000);
-        // char buffer[] = {' '};
-          // while(client.available()){
-          //     char replyBuffer[10];
-          //     // client.readBytesUntil('n', buffer, 1);
-          //     // // size = client.available();
-          //     Serial.println(replyBuffer);
-          //     size = client.readBytesUntil('\n',replyBuffer,3);
-          //     Serial.println(replyBuffer);
-
-          //     // Serial.println(replyBuffer);
-              
-          // }
+      
 close:
           //disconnect client
           Serial.println("Client disconnect");
