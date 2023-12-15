@@ -17,7 +17,7 @@
  */
 
 #include <UIPEthernet.h>
-
+#include <SD.h>
 EthernetClient client;
 signed long next;
 int ledPin9 = 9;
@@ -43,136 +43,116 @@ void setup() {
 }
 
 void loop() {
-  if (((signed long)(millis() - next)) > 0)
-    {
-      next = millis() + 5000;
-      Serial.println("Client connect");
-      // replace hostname with name of machine running tcpserver.pl
-//      if (client.connect("server.local",5000))
-      if (client.connect(IPAddress(10,13,100,141),50000))
-        {
-          Serial.println("Client connected");
-          // client.println("DATA from Client");
-          while(client.available()==0)
-            {
+  if (((signed long)(millis() - next)) > 0) {
+    next = millis() + 5000;
+    Serial.println("Client connect");
+    // replace hostname with name of machine running tcpserver.pl
+    //      if (client.connect("server.local",5000))
+    if (client.connect(IPAddress(10, 13, 100, 141), 50000)) {
+      Serial.println("Client connected");
+      // client.println("DATA from Client");
+      while (client.available() == 0) {
 
-              if (next - millis() < 0)
-                goto close;
-            }
-          int size;
-           
-          while( (size = client.available())>0)
-            {
-              // // char buffer[size];
-              // uint8_t* msg = (uint8_t*)malloc(size);
-              // // char 
-              // // msg = client.read()
-              // size = client.read(msg, size);
+        if (next - millis() < 0)
+          goto close;
+      }
+      int size;
 
-              // // for (i = 0; i<size; i++){
-              // // // //   buffer[i] = *(msg)
-              // char buffer_poll[size];
-              // Serial.println(size);
-              // size = client.read(buffer_poll, size);
-              // // }
-              // Serial.println(size);
-              char poll_buff[size];
-              Serial.println(size);
-              size = client.read(poll_buff, size);
-              client.flush();
-              Serial.write(poll_buff,size);
+      while ((size = client.available()) > 0) {
+        // // char buffer[size];
+        // uint8_t* msg = (uint8_t*)malloc(size);
+        // // char
+        // // msg = client.read()
+        // size = client.read(msg, size);
 
-              client.write(SERIAL_NO, sizeof(SERIAL_NO));
-              client.flush();
-              // size = client.available();
-              size = 10;
-              // delay(2000);
-              char buffer[size];
-              Serial.println(size);
-              int counter = 0;
-              while(true){
-              size = client.read(buffer, 15);
-              if (size > 0){
-                break;
-              }
-              // if (counter == 10){
-              //   break;
-              
-              // }
-              }
-              Serial.write(buffer,size);
-              Serial.println(size);
-               char newBuff[size];
+        // // for (i = 0; i<size; i++){
+        // // // //   buffer[i] = *(msg)
+        // char buffer_poll[size];
+        // Serial.println(size);
+        // size = client.read(buffer_poll, size);
+        // // }
+        // Serial.println(size);
+        char poll_buff[size];
+        Serial.println(size);
+        size = client.read(poll_buff, size);
+        client.flush();
+        Serial.write(poll_buff, size);
 
-              for (int i = 0; i < size ; i++){
-                if (buffer[i] != 'E'){
-                  newBuff[i] =buffer[i];
-                  Serial.print(newBuff[i]);
-                }
-                else{
-                  newBuff[i] = 0;
-                  break;
-                }
+        client.write(SERIAL_NO, sizeof(SERIAL_NO));
+        client.flush();
+        // size = client.available();
+        size = 10;
+        // delay(2000);
+        char buffer[size];
+        Serial.println(size);
+        int counter = 0;
+        while (true) {
+          size = client.read(buffer, 15);
+          if (size > 0) {
+            break;
+          }
+          // if (counter == 10){
+          //   break;
 
-              }
-            
-              Serial.print('\n');
-              String relayCommand = "relayOn01";
-              int flag = 0;
-              // for (int i = 0; i <sizeof(newBuff); i++){
-              //   // Serial.println("inside of the loop");
-              //     if (newBuff[i] != relayCommand[i]){
-              //       Serial.println("Cannot parse the command");
-              //       flag= 0;
-              //     }
-              // }
-              Serial.println(strcmp(newBuff, "relayOn01"));
-              // if (strcmp(newBuff, "relayOn01")==0){
-              //   flag = 1;
-              // }
-              char ack[3] = "ACK";
-              if (strcmp(newBuff,"relayOn01" )== 0){
-                Serial.println("Recieved ON Command, sending the ACK");
-                digitalWrite(ledPin9, LOW);
-                
-                client.write(ack, 3);
-              }
-              if (strcmp(newBuff,"relayOff01")==0){
-                Serial.println("Recieved OFF command, sending the ACK");
-                digitalWrite(ledPin9, HIGH);
-                // char ack[3] = "ACK";
-                client.write(ack, 3);
-
-              }
-              // Serial.println(newBuff);
-              // Serial.println(buffer);
-
-              // Serial.write(msg,size);
-            //  free(msg);
-              // Serial.println(replyBuffer);
-            }
-            delay(2000);
-        // char buffer[] = {' '};
-          // while(client.available()){
-          //     char replyBuffer[10];
-          //     // client.readBytesUntil('n', buffer, 1);
-          //     // // size = client.available();
-          //     Serial.println(replyBuffer);
-          //     size = client.readBytesUntil('\n',replyBuffer,3);
-          //     Serial.println(replyBuffer);
-
-          //     // Serial.println(replyBuffer);
-              
           // }
-close:
-          //disconnect client
-          Serial.println("Client disconnect");
-          // Serial.println("Turning of the relay");
-          client.stop();
-
-
         }
-      else
-        Serial.println("Client connect failed");
-    }
+        Serial.write(buffer, size);
+        Serial.println(size);
+        char newBuff[size];
+
+        for (int i = 0; i < size; i++) {
+          if (buffer[i] != 'E') {
+            newBuff[i] = buffer[i];
+            Serial.print(newBuff[i]);
+          } else {
+            newBuff[i] = 0;
+            break;
+          }
+        }
+
+        Serial.print('\n');
+        String relayCommand = "relayOn01";
+        int flag = 0;
+        // for (int i = 0; i <sizeof(newBuff); i++){
+        //   // Serial.println("inside of the loop");
+        //     if (newBuff[i] != relayCommand[i]){
+        //       Serial.println("Cannot parse the command");
+        //       flag= 0;
+        //     }
+        // }
+        Serial.println(strcmp(newBuff, "relayOn01"));
+        // if (strcmp(newBuff, "relayOn01")==0){
+        //   flag = 1;
+        // }
+        char ack[3] = "ACK";
+        if (strcmp(newBuff, "relayOn01") == 0) {
+          Serial.println("Recieved ON Command, sending the ACK");
+          digitalWrite(ledPin9, LOW);
+
+          client.write(ack, 3);
+        }
+        if (strcmp(newBuff, "relayOff01") == 0) {
+          Serial.println("Recieved OFF command, sending the ACK");
+          digitalWrite(ledPin9, HIGH);
+          // char ack[3] = "ACK";
+          client.write(ack, 3);
+        }
+        // Serial.println(newBuff);
+        // Serial.println(buffer);
+
+        // Serial.write(msg,size);
+        //  free(msg);
+        // Serial.println(replyBuffer);
+      }
+      delay(2000);
+close:
+      //disconnect client
+      Serial.println("Client disconnect");
+      // Serial.println("Turning of the relay");
+      client.stop();
+
+
+    } else
+      Serial.println("Client connect failed");
+  }
 }

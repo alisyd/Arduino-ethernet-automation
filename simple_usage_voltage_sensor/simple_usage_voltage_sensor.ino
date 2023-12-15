@@ -4,7 +4,7 @@
 
 #include <ZMPT101B.h>
 
-#define SENSITIVITY 674.75000f
+#define SENSITIVITY 470.000f
 
 // ZMPT101B sensor output connected to analog pin A0
 // and the voltage source frequency is 50 Hz.

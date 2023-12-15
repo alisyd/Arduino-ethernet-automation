@@ -20,6 +20,7 @@
 #include <ZMPT101B.h>
 #include <stdlib.h>
 
+
 #define SENSITIVITY_1 674.75000f
 float measureVoltage(uint8_t pin){
   
@@ -89,13 +90,21 @@ EthernetClient client;
 signed long next;
 int ledPin9 = 9;
 char SERIAL_NO[] = "AXTCP101";
-
+int ETHCS = 4;
+int progTrig = 5;
 void setup() {
   // int ledPin9 = 9;
   Serial.begin(9600);
   pinMode(ledPin9, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(progTrig, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
   uint8_t mac[6] = { 0x74, 0x69, 0x69, 0x2D, 0x30, 0x31 };
+  digitalWrite(progTrig, HIGH);
+  delay(5000);
+  Ethernet.init(ETHCS);
   Ethernet.begin(mac, "ACXTCP101");
+
 
   Serial.print("localIP: ");
   Serial.println(Ethernet.localIP());
@@ -214,11 +223,11 @@ void loop() {
               Serial.println(strcmp(newBuff, "relayCV01"));
               if (strcmp(newBuff,"relayCV01")==0){
                 Serial.println("Recieved Current Voltage Read, sending data");
-                // float voltage = 230.00;
-                float voltage = measureVoltage(A0);
+                float voltage = 230.00;
+                // float voltage = measureVoltage(A0);
 
-                // float current = 0.445;
-                float current = measureCurrent(A1);
+                float current = 0.445;
+                // float current = measureCurrent(A1);
 
                 char * formattedCV = formatCV(current,voltage);
                 client.write(formattedCV, 30);
@@ -299,4 +308,17 @@ close:
       else
         Serial.println("Client connect failed");
     }
+}
+
+
+void setBootResetFlag(){
+  MCUCR = (1<<IVCE);
+    // Move interrupts to Boot Flash section
+    MCUCR = (1<<IVSEL);
+
+    // enable watchdog timer
+    wdt_enable(WDTO_15MS);
+
+    // block waiting for the watchdog to timeout and jump to the bootloader
+    while(1);
 }

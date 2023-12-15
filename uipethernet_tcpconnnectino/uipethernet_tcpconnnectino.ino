@@ -21,15 +21,26 @@
 EthernetClient client;
 signed long next;
 int ledPin9 = 9;
+int ETH_CS = 4;
+int SD_CS = 6;
 char SERIAL_NO[] = "AXTCP101";
 
 void setup() {
   // int ledPin9 = 9;
   Serial.begin(9600);
   pinMode(ledPin9, OUTPUT);
+  // pinMode(ETH_CS, OUTPUT);
+  // pinMode(SD_CS, OUTPUT);
+   Serial.print("Initializing SD card...");
+  Serial.println("initialization done.");
+  // digitalWrite(SD_CS, HIGH);
   uint8_t mac[6] = { 0x74, 0x69, 0x69, 0x2D, 0x30, 0x31 };
+  Serial.println("Selecting Ethernet");
+  // digitalWrite(ETH_EN, LOW);
+  Ethernet.init(ETH_CS);
+  // digitalWrite(ETH_CS, HIGH);
   Ethernet.begin(mac, "AXTCP101");
-
+  
   Serial.print("localIP: ");
   Serial.println(Ethernet.localIP());
   Serial.print("subnetMask: ");
@@ -38,9 +49,8 @@ void setup() {
   Serial.println(Ethernet.gatewayIP());
   Serial.print("dnsServerIP: ");
   Serial.println(Ethernet.dnsServerIP());
-
-  next = 0;
 }
+
 
 void loop() {
   if (((signed long)(millis() - next)) > 0)
@@ -63,19 +73,6 @@ void loop() {
            
           while( (size = client.available())>0)
             {
-              // // char buffer[size];
-              // uint8_t* msg = (uint8_t*)malloc(size);
-              // // char 
-              // // msg = client.read()
-              // size = client.read(msg, size);
-
-              // // for (i = 0; i<size; i++){
-              // // // //   buffer[i] = *(msg)
-              // char buffer_poll[size];
-              // Serial.println(size);
-              // size = client.read(buffer_poll, size);
-              // // }
-              // Serial.println(size);
               char poll_buff[size];
               Serial.println(size);
               size = client.read(poll_buff, size);
@@ -117,8 +114,8 @@ void loop() {
               }
             
               Serial.print('\n');
-              String relayCommand = "relayOn01";
-              int flag = 0;
+              // String relayCommand = "relayOn01";
+              // int flag = 0;
               // for (int i = 0; i <sizeof(newBuff); i++){
               //   // Serial.println("inside of the loop");
               //     if (newBuff[i] != relayCommand[i]){
@@ -126,24 +123,24 @@ void loop() {
               //       flag= 0;
               //     }
               // }
-              Serial.println(strcmp(newBuff, "relayOn01"));
+              // Serial.println(strcmp(newBuff, "relayOn01"));
               // if (strcmp(newBuff, "relayOn01")==0){
               //   flag = 1;
-              // }
-              char ack[3] = "ACK";
-              if (strcmp(newBuff,"relayOn01" )== 0){
-                Serial.println("Recieved ON Command, sending the ACK");
-                digitalWrite(ledPin9, LOW);
+              // // }
+              // char ack[3] = "ACK";
+              // if (strcmp(newBuff,"relayOn01" )== 0){
+              //   Serial.println("Recieved ON Command, sending the ACK");
+              //   digitalWrite(ledPin9, LOW);
                 
-                client.write(ack, 3);
-              }
-              if (strcmp(newBuff,"relayOff01")==0){
-                Serial.println("Recieved OFF command, sending the ACK");
-                digitalWrite(ledPin9, HIGH);
-                // char ack[3] = "ACK";
-                client.write(ack, 3);
+              //   client.write(ack, 3);
+              // }
+              // if (strcmp(newBuff,"relayOff01")==0){
+              //   Serial.println("Recieved OFF command, sending the ACK");
+              //   digitalWrite(ledPin9, HIGH);
+              //   // char ack[3] = "ACK";
+              //   client.write(ack, 3);
 
-              }
+              // }
               // Serial.println(newBuff);
               // Serial.println(buffer);
 
