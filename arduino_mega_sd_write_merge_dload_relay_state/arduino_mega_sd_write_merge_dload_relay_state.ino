@@ -83,7 +83,7 @@ sd_sel();
     // while (1);
   }
   Serial.println("initialization done.");
-
+ 
 
   eth_sel();
   Serial.println("Enabled Ethernet Module");

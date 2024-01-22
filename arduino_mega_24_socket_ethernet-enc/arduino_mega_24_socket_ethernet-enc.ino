@@ -99,7 +99,7 @@ void setup() {
   pinMode(eth_cs, OUTPUT);
 
   for(int i=0; i < 24; i++){
-    pinMode(relays[i], OUTPUT);
+    pinMode(relays[0], OUTPUT);
   }
   //declare current sensors pins for input
   for(int i = 0; i < 8; i++){
@@ -113,7 +113,7 @@ void setup() {
   pinMode(SIG, INPUT);
   pinMode(voltage_sensor, INPUT);
 
-  // Serial.write(fetchCV());
+  Serial.write(fetchCV());
 
   // pinMode(relay7, OUTPUT);
 
@@ -167,8 +167,8 @@ void loop() {
   Ethernet.maintain();
   counter +=1;
 
-  // Serial.println(next);
-  // Serial.println(counter);
+  Serial.println(next);
+  Serial.println(counter);
  
   digitalWrite(LED_BUILTIN, LOW);
   if (((signed long)(millis() - next)) > 0)
@@ -178,7 +178,7 @@ void loop() {
   // digitalWrite(LED_BUILTIN, HIGH);
 
       // replace hostname with name of machine running tcpserver.pl
-     if (client.connect(server, 50000))
+     if (client.connect(IPAddress(10, 13, 100, 133),4040))
       // if (client.connect(IPAddress(15,207,232,168),50000))
         {
 
@@ -259,24 +259,18 @@ void loop() {
               if (strncmp(newBuff, "relay", 5)==0){
                 char relay_no_char[3];
                 int relay_no;
+                strncpy(relay_no_char, newBuff + strlen(newBuff)-2, 2 );
+                relay_no_char[2] = '\0';
+                relay_no = atoi(relay_no_char);
 
                 if (strncmp(newBuff + 5, "On",2) == 0) {
                   Serial.print("Recieved  ON ");
-                  strncpy(relay_no_char, newBuff + 7, 2 );
-                  relay_no_char[2] = '\0';
-                  Serial.write(relay_no_char);
-                  relay_no = atoi(relay_no_char);
-                  Serial.println(relays[relay_no -1]);
-
+                  Serial.print(relay_no);
                   digitalWrite(relays[relay_no - 1], HIGH);
                   
                 }
                 else if(strncmp(newBuff +5, "Off", 3) == 0){
                   Serial.print("Recieved OFF");
-                  strncpy(relay_no_char, newBuff + 8, 2 );
-                  relay_no_char[2] = '\0';
-                  relay_no = atoi(relay_no_char);
-                  Serial.print(relay_no);
                   digitalWrite(relays[relay_no - 1], LOW);
                 }
                 client.write("ACKE", 6);
@@ -314,7 +308,6 @@ void loop() {
                 Serial.println(formattedCV);
                 Serial.println(sizeof(formattedCV));
                 client.write(formattedCV, strlen(formattedCV));
-                free(formattedCV);
               }
               // if (strcmp(newBuff,"relayOn01" )== 0){
               //   Serial.println("Recieved ON Command, sending the ACK");
